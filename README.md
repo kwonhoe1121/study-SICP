@@ -17,6 +17,7 @@ SICP 연습문제 풀이 저장소
 ### 개발 환경
 
 - [Configuring Vim for SICP](https://crash.net.nz/posts/2014/08/configuring-vim-for-sicp/)
+- [LIPS](https://github.com/jcubic/lips)
 
 ### SICP solutions
 
@@ -26,4 +27,4 @@ SICP 연습문제 풀이 저장소
 
 ### 기타
 
-- [SICP-독학 위한 자료들](https://mitpress.mit.edu/sites/default/files/sicp/index.html)
+- [SICP-독학을 위한 자료들](https://mitpress.mit.edu/sites/default/files/sicp/index.html)
