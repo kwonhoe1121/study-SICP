@@ -11,3 +11,9 @@
 
 (define (double x) (+ x x)) 
 (define (halve x) (/ x 2))
+
+; gcd(a, b) = gcd(b, r)
+(define (gcd a b)
+  (if (= b 0)
+    a
+    (gcd b (remainder a b))))
