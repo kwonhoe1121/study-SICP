@@ -8,3 +8,6 @@
   (cond ((= n 0) 1)
         ((even? n) (square (expt b (/ n 2))))
         (else (* b (expt b (- n 1))))))
+
+(define (double x) (+ x x)) 
+(define (halve x) (/ x 2))

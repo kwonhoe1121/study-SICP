@@ -1,3 +1,5 @@
+(load "./src/lib/util.scm")
+
 (define (* a b)
   (if (= b 0)
     0
@@ -11,8 +13,11 @@
 ;         ((even? n) (square (expt b (/ n 2))))
 ;         (else (* b (expt b (- n 1))))))
 
-(define (double x) (+ x x)) 
-(define (halve x) (/ x 2))
+; 거듭제곱 -> 곱셈 
+; square -> double
+; expt -> *
+; * -> +
+; 항등원(1 -> 0)
 
 (define (* a b)
   (cond ((= b 0) 0)
