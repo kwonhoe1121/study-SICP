@@ -1,8 +1,7 @@
-(define (square n)
-  (* n n))
+(define (square n) (* n n))
+(define (cube n) (* n n n))
 
-(define (even? n)
-  (= (remainder n 2) 0))
+(define (even? n) (= (remainder n 2) 0))
 
 (define (expt b n)
   (cond ((= n 0) 1)
@@ -57,3 +56,17 @@
   (cond ((= times 0) true)
         ((fermat-test n) (fast-prime? n (- times 1)))
         (else false)))
+
+(define (sum term a next b)
+  (if (> a b)
+      0
+      (+ (term a)
+         (sum term (next a) next b))))
+
+(define (inc n) (+ n 1))
+(define (identity x) x)
+
+(define (integral f a b dx)
+  (define (add-dx x) (+ x dx))
+  (* (sum f (+ a (/ dx 2.0)) add-dx b) 
+     dx))
