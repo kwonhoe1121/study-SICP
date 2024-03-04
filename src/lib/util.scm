@@ -167,3 +167,12 @@
      (lambda (y) (- (square y) x))
      newton-transform ; 뉴튼 변환 방식
    1.0))
+
+(define (compose f g)
+  (lambda (x)
+    (f (g x))))
+
+(define (repeated f n)
+  (if (= n 1)
+    f
+    (compose f (repeated f (- n 1)))))
