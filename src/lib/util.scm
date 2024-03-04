@@ -116,14 +116,6 @@
           (try next))))
   (try first-guess))
 
-; y = sqrt(x)
-; y^2 = x
-; y |-> x/y
-(define (sqrt x)
-  (fixed-point 
-   (lambda (y) (average y (/ x y)))
-   1.0))
-
 ; x |-> 1 + 1/x
 (define (phi)
   (fixed-point
@@ -137,3 +129,41 @@
       (/ (n i)
          (+ (d i) (recur (+ i + 1))))))
   (recur 1))
+
+(define (average-damp f)
+  (lambda (x) 
+    (average x (f x))))
+
+(define (newton-transform g)
+  (define (deriv g)
+    (define dx 0.00001)
+    (lambda (x)
+      (/ (- (g (+ x dx)) (g x))
+         dx)))
+  (lambda (x)
+    (- x (/ (g x) 
+            ((deriv g) x)))))
+
+(define (newtons-method g guess)
+  (fixed-point (newton-transform g) 
+               guess))
+
+(define (fixed-point-of-transform g transform guess)
+  (fixed-point (transform g)
+               guess))
+
+; y = sqrt(x)
+; y^2 = x
+; y |-> x/y
+(define (sqrt x)
+  (fixed-point-of-transform
+    (lambda (y) (/ x y))
+    average-damp ; 평균 감쇄 변환 방식
+   1.0))
+
+; y |-> y²-x
+(define (sqrt x)
+  (fixed-point-of-transform 
+     (lambda (y) (- (square y) x))
+     newton-transform ; 뉴튼 변환 방식
+   1.0))
