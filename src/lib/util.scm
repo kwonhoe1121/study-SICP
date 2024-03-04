@@ -116,7 +116,16 @@
           (try next))))
   (try first-guess))
 
+; y = sqrt(x)
+; y^2 = x
+; y |-> x/y
 (define (sqrt x)
   (fixed-point 
    (lambda (y) (average y (/ x y)))
    1.0))
+
+; x |-> 1 + 1/x
+(define (phi)
+  (fixed-point
+    (lambda (x) (average x (+ 1 (/ 1 x))))
+    1.0))
