@@ -1,0 +1,20 @@
+(load "./src/ch2/rational-number.scm")
+
+(define (make-rat n d)
+  (define (cal-sign n d)
+    (cond ((and (negative? n) (negative? d)) (cons (- n) (- d)))
+          ((and (positive? n) (negative? d)) (cons (- n) (- d)))
+          (else (cons n d))))
+  (let ((g (gcd n d)))
+    (cal-sign (/ n g) 
+              (/ d g))))
+
+; (define foo (make-rat (- 6) 9))
+; (define foo2 (make-rat 6 (- 9)))
+; (define foo3 (make-rat (- 6) (- 9)))
+; (define foo4 (make-rat 6 9))
+
+; (print-rat foo)
+; (print-rat foo2)
+; (print-rat foo3)
+; (print-rat foo4)
