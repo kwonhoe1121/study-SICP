@@ -1,3 +1,5 @@
+(load "./src/lib/util.scm")
+
 ; 점
 
 (define (make-point x y) (cons x y))
@@ -9,6 +11,9 @@
     (/ (+ (x-point p1) (x-point p2)) 2)
     (/ (+ (y-point p1) (y-point p2)) 2)))
 
+(define (distance-point p1 p2)
+  (sqrt (+ (square (- (x-point p1) (x-point p2)))
+           (square (- (y-point p1) (y-point p2))))))
 
 ; 선
 
@@ -28,6 +33,11 @@
   (let ((start (start-segment segment))
         (end (end-segment segment)))
     (mid-point start end)))
+
+(define (distance-segment segment)
+  (distance-point
+    (start-segment segment)
+    (end-segment segment)))
 
 ; (define start (make-point 1 2))
 ; (define end (make-point 5 6))
