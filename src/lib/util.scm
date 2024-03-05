@@ -104,7 +104,7 @@
            (error "Values are not of 
                    opposite sign" a b)))))
 
-define (iterative-improve good-enough? improve)
+(define (iterative-improve good-enough? improve)
  (define (iter guess)
    (if (good-enough? guess)
        guess
