@@ -225,3 +225,16 @@
   (if (null? (cdr items))
     items
     (last-pair (cdr items))))
+
+(define (reverse items)
+  (if (null? items)
+    items
+    (append (reverse (cdr items))
+            (list (car items)))))
+
+(define (reverse-iter items)
+  (define (iter rest result)
+    (if (null? rest)
+      result
+      (iter (cdr rest) (cons (car rest) result))))
+  (iter items '()))
