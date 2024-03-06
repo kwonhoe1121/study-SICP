@@ -1,5 +1,5 @@
 ; 구간 산술 연산 프로그램
-; ex-7 ~
+; ex-2.7 ~
 
 ; selector
 
@@ -38,6 +38,16 @@
                 (make-interval 
                  (/ 1.0 (upper-bound y)) 
                  (/ 1.0 (lower-bound y)))))
+
+(define (div-interval x y)
+  (let ((lower-y (lower-bound y))
+        (upper-y (upper-bound y)))
+    (if (<= 0 (* lower-y upper-y)) ; the problem is the interval spans zero (upper-bound > 0, and lower-bound < 0)
+      (error "[Error]: divide by zero")
+      (mul-interval x 
+                    (make-interval 
+                     (/ 1.0 (upper-bound y)) 
+                     (/ 1.0 (lower-bound y)))))))
 
 ; constructor
 
