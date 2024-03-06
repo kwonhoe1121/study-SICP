@@ -19,7 +19,7 @@
         (p4 (- (upper-bound y) 
                (upper-bound x))))
   (make-interval (min p1 p2 p3 p4)
-                 (max p1 p2 p3 p4)))
+                 (max p1 p2 p3 p4))))
 
 ; (define (mul-interval x y)
 ;   (let ((p1 (* (lower-bound x) 
@@ -86,6 +86,30 @@
                     (make-interval 
                      (/ 1.0 (upper-bound y)) 
                      (/ 1.0 (lower-bound y)))))))
+
+(define (make-center-width c w)
+  (make-interval (- c w) (+ c w)))
+
+(define (center i)
+  (/ (+ (lower-bound i) 
+        (upper-bound i)) 
+     2))
+
+(define (width i)
+  (/ (- (upper-bound i) 
+        (lower-bound i)) 
+     2))
+
+(define (make-center-percent c e)
+  (let ((w (abs (* (/ e 100) c))))
+    (make-center-width c w)))
+
+ ; 이때 불확실성은 구간의 폭에 대한 구간 중점의 비율로 측정된다.
+(define (percent i)
+  (if (= (center i) 0)
+    0
+    (* 100 (abs (/ (- (upper-bound i) (center i))
+                   (center i))))))
 
 ; constructor
 
