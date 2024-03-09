@@ -338,3 +338,48 @@
         (iter (op result (car rest))
               (cdr rest))))
   (iter initial sequence))
+
+; flatmap := append(flatten) + map
+(define (flatmap proc seq)
+  (accumulate append nil (map proc seq)))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair) 
+        (cadr pair) 
+        (+ (car pair) (cadr pair))))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter 
+        prime-sum?
+        (flatmap
+         (lambda (i)
+           (map (lambda (j) 
+                  (list i j))
+                (enumerate-interval 
+                 1 
+                 (- i 1))))
+         (enumerate-interval 1 n)))))
+
+; S의 각 원소 x에 대하여, S-x 의 순열을 모두 구해 차례열로 묶어낸다.
+; 차례열 속에 있는 각 순열의 맨 앞에 x를 덧붙이다.
+; 그리하면, S의 각 원소 x에 대하여 x로 시작되는 모든 순열을 얻을 수 있다.
+; 이때, S의 순열을 구하는 문제가 S보다 원소가 적은 집합에서 순열을 구하는 문제로 작아지고 있음을 눈여겨보자.
+; =~ subsets procedure
+
+(define (permutations s)
+  (if (null? s)   ; empty set?
+      (list nil)  ; sequence containing empty set
+      (flatmap (lambda (x)
+                 (map (lambda (p) 
+                        (cons x p))
+                      (permutations 
+                       (remove x s))))
+               s)))
+
+(define (remove item sequence)
+  (filter (lambda (x) (not (= x item)))
+          sequence))
