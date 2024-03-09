@@ -66,7 +66,9 @@
 ### 성질
 
 - 닫힘 성질(closure property)
+  - `cons` -> `cons`
 - 공통 인터페이스(conventional interface)
+  - list 인터페이스 연산: `range`, `map`, `filter`, `reduce`
 
 ## 일반화된 연산(generic operation)
 
