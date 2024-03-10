@@ -205,3 +205,81 @@
           diamond-segment-2
           diamond-segment-3
           diamond-segment-4)))
+
+; 틀 변환
+; 페인터 변환은 처음에 받아온 페인터를 그대로 쓰되, 그 뒤에 인자로 받은 틀에서 새로운 틀을 이끌어 내어 그에 맞추어 그림을 그리는 방식을 따른다.
+; 변환된 페인터는 틀을 인자로 받아서 그 틀을 변환한 다음에 원래 있던 페인터를 변환된 틀에 적용한다.
+(define (transform-painter 
+         painter origin corner1 corner2)
+  (lambda (frame)
+    (let ((m (frame-coord-map frame)))
+      (let ((new-origin (m origin)))
+        (painter (make-frame new-origin
+                  (sub-vect (m corner1) 
+                            new-origin)
+                  (sub-vect (m corner2)
+                            new-origin)))))))
+
+(define (flip-vert painter)
+  (transform-painter 
+   painter
+   (make-vect 0.0 1.0)   ; new origin
+   (make-vect 1.0 1.0)   ; new end of edge1
+   (make-vect 0.0 0.0))) ; new end of edge2
+
+(define (shrink-to-upper-right painter)
+  (transform-painter painter
+                     (make-vect 0.5 0.5)
+                     (make-vect 1.0 0.5)
+                     (make-vect 0.5 1.0)))
+
+(define (rotate90 painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 0.0)))
+
+(define (squash-inwards painter)
+  (transform-painter painter
+                     (make-vect 0.0 0.0)
+                     (make-vect 0.65 0.35)
+                     (make-vect 0.35 0.65)))
+
+; 무엇보다도 페인터를 프로시저로 표현한 방식이 beside 프로시저를 얼마나 구현하기 쉽게 만드는지 눈여겨보자.
+(define (beside painter1 painter2)
+  (let ((split-point (make-vect 0.5 0.0)))
+    (let ((paint-left  (transform-painter 
+                        painter1
+                        (make-vect 0.0 0.0)
+                        split-point
+                        (make-vect 0.0 1.0)))
+          (paint-right (transform-painter
+                        painter2
+                        split-point
+                        (make-vect 1.0 0.0)
+                        (make-vect 0.5 1.0))))
+      (lambda (frame)
+        (paint-left frame)
+        (paint-right frame)))))
+
+; ex-2.50
+; 좌우로 뒤집힌 이미지를 생성하도록 변환하는 변환 함수
+(define (flip-horiz painter)
+  (transform-painter painter
+                     (make-vect 1 0)
+                     (make-vect 0 0)
+                     (make-vect 1 1)))
+
+; 이미지를 반시계방향으로 180도 회전하게 하는 변환 함수
+(define (rotate180 painter)
+  (transform-painter painter
+                     (make-vect 1 1)
+                     (make-vect 0 1)
+                     (make-vect 1 0)))
+
+; 이미지를 반시계방향으로 270도 회전하게 하는 변환 함수
+(define (rotate270 painter)
+  (transform-painter painter
+                     (make-vect 0 1)
+                     (make-vect 0 0)
+                     (make-vect 1 0)))
