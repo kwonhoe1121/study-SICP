@@ -1,9 +1,7 @@
 (load "./src/lib/util.scm")
 
-(require (planet "sicp.ss" ("soegaard" "sicp.plt" 2 1)))
-
 ; 그림 언어
-; 1. 원시 요소: 페인터
+; 1. 원시 요소: 페인터 => 프로시저로 구현 => 일관성, 데이터 추상
 ; 2. 조합 수단: beside, below, filp-vert, flip-horizon, ... -> 조합 결과는 페인터(닫힘 성질)
 ; 3. 추상화 수단: 기본 스킴 프로시저 사용
 
