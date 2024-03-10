@@ -283,3 +283,20 @@
                      (make-vect 0 1)
                      (make-vect 0 0)
                      (make-vect 1 0)))
+
+; ex-2.51
+
+; 두 화가의 그림을 상하로 배치하는 화가를 만드는 변환 함수
+(define (below painter1 painter2)
+  (let ((split-point (make-vect 0 0.5))
+        (paint-upper (transform-painter painter1
+                                        split-point
+                                        (make-vect 1 0.5)
+                                        (make-vect 0 1)))
+        (paint-lower (transform-painter painter2
+                                        (make-vect 0 0)
+                                        (make-vect 1 0)
+                                        split-point)))
+    (lambda (frame)
+      (paint-upper frame)
+      (paint-lower frame))))
