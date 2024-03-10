@@ -150,3 +150,58 @@
 (define (make-segment start end) (cons start end))
 (define (start-segment segment) (car segment))
 (define (end-segment segment) (cdr segment))
+
+; ex-49
+
+; 주어진 액자의 테두리를 그리는 화가.
+
+(define outline-start-1 (make-vect 0 0))
+(define outline-end-1 (make-vect 1 0))
+(define outline-segment-1 (make-segment outline-start-1 outline-end-1))
+(define outline-start-2 (make-vect 1 0))
+(define outline-end-2 (make-vect 1 1))
+(define outline-segment-2 (make-segment outline-start-2 outline-end-2))
+(define outline-start-3 (make-vect 1 1))
+(define outline-end-3 (make-vect 0 1))
+(define outline-segment-3 (make-segment outline-start-3 outline-end-3))
+(define outline-start-4 (make-vect 0 1))
+(define outline-end-4 (make-vect 0 1))
+(define outline-segment-4 (make-segment outline-start-4 outline-end-4))
+(define outline-painter
+  (segments->painter
+    (list outline-segment-1
+          outline-segment-2
+          outline-segment-3
+          outline-segment-4)))
+
+; 주어진 액자의 꼭짓점들을 대각선 방향으로 연결해서 'X'자를 그리는 화가
+
+(define x-start-1 (make-vect 0 0))
+(define x-end-1 (make-vect 1 1))
+(define x-segment-1 (make-segment x-start-1 x-end-1))
+(define x-start-2 (make-vect 1 0))
+(define x-end-2 (make-vect 0 1))
+(define x-segment-2 (make-segment x-start-2 x-end-2))
+(define x-painter (segments->painter (list x-segment-1 x-segment-2)))
+
+
+; 주어진 액자의 각 변 중점을 연결해서 마름모꼴(다이아몬드)을 그리는 화가.
+
+(define diamond-start-1 (make-vect 0.5 0))
+(define diamond-end-1 (make-vect 1 0.5))
+(define diamond-segment-1 (make-segment diamond-start-1 diamond-end-1))
+(define diamond-start-2 (make-vect 1 0.5))
+(define diamond-end-2 (make-vect 0.5 1))
+(define diamond-segment-2 (make-segment diamond-start-2 diamond-end-2))
+(define diamond-start-3 (make-vect 0.5 1))
+(define diamond-end-3 (make-vect 0 0.5))
+(define diamond-segment-3 (make-segment diamond-start-3 diamond-end-3))
+(define diamond-start-4 (make-vect 0 0.5))
+(define diamond-end-4 (make-vect 0.5 0))
+(define diamond-segment-4 (make-segment diamond-start-4 diamond-end-4))
+(define diamond-painter
+  (segments->painter
+    (list diamond-segment-1
+          diamond-segment-2
+          diamond-segment-3
+          diamond-segment-4)))
