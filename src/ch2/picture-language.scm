@@ -89,7 +89,9 @@
 
 (define right-split (split beside below))
 (define up-split (split below beside))
-
+ 
+; 그림틀 := <원점벡터, 모서리1 벡터, 모서리2 벡터>
+; 프로시저는 인자로 바다은 벡터가 단위 네모 속에 있을 때, 그에 해당하는 그림틀 속의 벡터를 돌려준다.
 (define (frame-coord-map frame)
   (lambda (v)
     (add-vect
@@ -127,3 +129,24 @@
 (define (origin-frame frame) (car frame))
 (define (edge1-frame frame) (car (cdr frame)))
 (define (edge2-frame frame) (cdr (cdr frame)))
+
+; 페인터
+; 페인터는 프로시저로 나타낸다. 이 프로시저는 그림틀을 인자로 받아서, 그 틀에 맞춘 그림을 그린다. (선분 리스트를 인자로 받고, 그림틀을 인자로 받는 함수 반환)
+; 리스트 속 선분 하나하나에 대하여, 선분의 두 끝점이 가리키는 좌표 값을 그림틀 속의 좌표 값으로 바꾼 다음에, 그 좌표 값 사이에 선을 긋는다.
+; 데이터를 프로시저로 표현하는 방식
+(define (segments->painter segment-list)
+  (lambda (frame)
+    (for-each
+     (lambda (segment)
+       (draw-line
+        ((frame-coord-map frame) 
+         (start-segment segment))
+        ((frame-coord-map frame) 
+         (end-segment segment))))
+     segment-list)))
+
+; ex-2.48
+
+(define (make-segment start end) (cons start end))
+(define (start-segment segment) (car segment))
+(define (end-segment segment) (cdr segment))
