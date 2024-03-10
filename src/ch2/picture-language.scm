@@ -51,3 +51,41 @@
     (let ((smaller (up-split painter (- n 1))))
       (below painter
              (beside smaller smaller)))))
+
+(define (square-of-four tl tr bl br)
+  (lambda (painter)
+    (let ((top (beside (tl painter) 
+                       (tr painter)))
+          (bottom (beside (bl painter) 
+                          (br painter))))
+      (below bottom top))))
+
+(define (flipped-pairs painter)
+  (let ((combine4 
+         (square-of-four identity 
+                         flip-vert
+                         identity 
+                         flip-vert)))
+    (combine4 painter)))
+
+(define (square-limit painter n)
+  (let ((combine4 
+         (square-of-four flip-horiz 
+                         identity
+                         rotate180 
+                         flip-vert)))
+    (combine4 (corner-split painter n))))
+
+; ex-2.45
+(define (split f1 f2)
+  (define (recur painter n)
+    (if (= n 0)
+      painter
+      (let ((smaller (recur painter
+                            (- n 1))))
+        (f1 painter
+            (f2 smaller smaller)))))
+  recur)
+
+(define right-split (split beside below))
+(define up-split (split below beside))
