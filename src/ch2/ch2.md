@@ -1,6 +1,6 @@
 # 데이터를 요약해서 표현력을 끌어올리는 방법
 
-## 데이터 요약(data abstraction)
+## 데이터 요약(data abstraction) ~> wishful thinking
 
 1. 데이터를 만드는 부품(constructor)
 2. 데이터를 쓰는 부품(selector)
