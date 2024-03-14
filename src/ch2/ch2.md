@@ -62,6 +62,12 @@
 ```
 
 - 집합set 구조
+  - 인터페이스
+    - `union-set`, `intersection-set`, `element-of-set?`, `adjoin-set`
+  - 자료 구조 표현 방식
+    - unordered list - `O(n²)`
+    - ordered list - `O(n)`
+    - binary tree - `O(log(n))`
 
 ### 성질
 
