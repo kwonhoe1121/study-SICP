@@ -85,3 +85,18 @@
       (cond ((memq symbol (symbols left-tree)) (cons 0 (encode-symbol symbol left-tree)))
             ((memq symbol (symbols right-tree)) (cons 1 (encode-symbol symbol right-tree)))
             (else (error "symbol not found -- encode-symbol" symbol))))))
+
+(define (generate-huffman-tree pairs)
+  (successive-merge 
+   (make-leaf-set pairs)))
+
+(define (successive-merge sets)
+  (if (= (length sets) 1)
+    (car sets)
+    (let ((x1 (car sets))
+          (x2 (cadr sets))
+          (rest-sets (cddr sets)))
+      (successive-merge
+        (adjoin-set (make-code-tree x1 x2)
+                    sets)))))
+
