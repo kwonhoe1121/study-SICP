@@ -68,3 +68,20 @@
          (make-leaf (car pair)    ; symbol
                     (cadr pair))  ; frequency
          (make-leaf-set (cdr pairs))))))
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append 
+       (encode-symbol (car message) 
+                      tree)
+       (encode (cdr message) tree))))
+
+(define (encode-symbol symbol tree)
+  (if (leaf? tree)
+    '()
+    (let ((left-tree (left-branch tree))
+          (right-tree (right-branch tree)))
+      (cond ((memq symbol (symbols left-tree)) (cons 0 (encode-symbol symbol left-tree)))
+            ((memq symbol (symbols right-tree)) (cons 1 (encode-symbol symbol right-tree)))
+            (else (error "symbol not found -- encode-symbol" symbol))))))
