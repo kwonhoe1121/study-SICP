@@ -21,6 +21,9 @@
   (define (rectangular-polar-equ? z1 z2)
     (and (= ((get 'real-part 'rectangular) z1) (real-part z2))
          (= ((get 'imag-part 'rectangular) z1) (imag-part z2))))
+  (define (=zero? x)
+    (and (= (magnitude x) 0)
+         (= (angle x) 0)))
   ;; interface to the rest of the system
   (define (tag x) (attach-tag 'polar x))
   (put 'real-part '(polar) real-part)
@@ -30,6 +33,7 @@
   (put 'equ? '(polar polar) polar-polar-equ?)
   (put 'equ? '(polar rectangular) polar-rectangular-equ?)
   (put 'equ? '(rectangular polar) rectangular-polar-equ?)
+  (put '=zero? '(polar) =zero?)
   (put 'make-from-real-imag 'polar
        (lambda (x y) 
          (tag (make-from-real-imag x y))))

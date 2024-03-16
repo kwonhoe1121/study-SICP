@@ -16,6 +16,9 @@
   (define (rectangular-rectangular-equ? z1 z2)
     (and (= (real-part z1) (real-part z2))
          (= (imag-part z1) (imag-part z2))))
+  (define (=zero? x)
+    (and (= (real-part x) 0)
+         (= (imag-part x) 0)))
   ;; interface to the rest of the system
   (define (tag x) 
     (attach-tag 'rectangular x))
@@ -24,6 +27,7 @@
   (put 'magnitude '(rectangular) magnitude)
   (put 'angle '(rectangular) angle)
   (put 'equ? '(rectangular rectangular) rectangular-rectangular-equ?)
+  (put '=zero? '(rectangular) =zero?)
   (put 'make-from-real-imag 'rectangular
        (lambda (x y) 
          (tag (make-from-real-imag x y))))

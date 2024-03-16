@@ -44,6 +44,7 @@
   (put 'magnitude '(complex) magnitude) ; ex-2.77
   (put 'angle '(complex) angle)
   (put 'equ? '(complex complex) equ?)
+  (put '=zero? '(complex) =zero?)
   (put 'make-from-real-imag 'complex
        (lambda (x y) 
          (tag (make-from-real-imag x y))))

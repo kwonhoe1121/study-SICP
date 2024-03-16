@@ -22,6 +22,7 @@
   (define (equ? x y)
     (and (= (number x) (numer y))
          (= (denom x) (denom y))))
+  (define (=zero? x) (= (numer x) 0))
   ;; interface to rest of the system
   (define (tag x) (attach-tag 'rational x))
   (put 'add '(rational rational)
@@ -34,6 +35,7 @@
        (lambda (x y) (tag (div-rat x y))))
   (put 'equ '(rational rational)
        (lambda (x y) (tag (equ? x y))))
+  (put '=zero? '(rational) (lambda (x) (tag (=zero? x))))
   (put 'make 'rational
        (lambda (n d) (tag (make-rat n d))))
   'done)
