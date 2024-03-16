@@ -13,6 +13,9 @@
     (atan (imag-part z) (real-part z)))
   (define (make-from-mag-ang r a)
     (cons (* r (cos a)) (* r (sin a))))
+  (define (rectangular-rectangular-equ? z1 z2)
+    (and (= (real-part z1) (real-part z2))
+         (= (imag-part z1) (imag-part z2))))
   ;; interface to the rest of the system
   (define (tag x) 
     (attach-tag 'rectangular x))
@@ -20,6 +23,7 @@
   (put 'imag-part '(rectangular) imag-part)
   (put 'magnitude '(rectangular) magnitude)
   (put 'angle '(rectangular) angle)
+  (put 'equ? '(rectangular rectangular) rectangular-rectangular-equ?)
   (put 'make-from-real-imag 'rectangular
        (lambda (x y) 
          (tag (make-from-real-imag x y))))
