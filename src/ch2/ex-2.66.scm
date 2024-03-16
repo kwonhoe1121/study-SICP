@@ -1,4 +1,4 @@
-(load "./src/ch2/binary-tree-sets.scm")
+(load "./src/ch2/sets/binary-tree-sets.scm")
 
 (define (lookup given-key set-of-records)
   (cond ((null? set-of-records) false)

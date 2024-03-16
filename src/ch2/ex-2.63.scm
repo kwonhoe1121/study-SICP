@@ -1,4 +1,4 @@
-(load "./src/ch2/binary-tree-sets.scm")
+(load "./src/ch2/sets/binary-tree-sets.scm")
 
 ; (a) - 아래는 모두 중위 순회하므로, 같은 리스트 목록을 반환한다.
 
