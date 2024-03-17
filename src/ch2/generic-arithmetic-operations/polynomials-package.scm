@@ -5,8 +5,14 @@
     (cons variable term-list))
   (define (variable p) (car p))
   (define (term-list p) (cdr p))
-  ⟨procedures same-variable? 
-   and variable? from section 2.3.2⟩
+
+  ; ex-2.87
+  (define (=zero? p)
+    (if (empty-termlist? p)
+      (the-empty-termlist)
+      (if (=zero? (coeff (first-term p)))
+        (=zero? (rest-terms p))
+        #f)))
 
   (define (add-terms L1 L2)
     (cond ((empty-termlist? L1) L2)
@@ -99,6 +105,7 @@
   (put 'mul '(polynomial polynomial) ; 일반화된 연산 mul에 다항식 경우도 추가
        (lambda (p1 p2) 
          (tag (mul-poly p1 p2))))
+  (put '=zero? '(polynomial) =zero?)
   (put 'make 'polynomial
        (lambda (var terms) 
          (tag (make-poly var terms))))
