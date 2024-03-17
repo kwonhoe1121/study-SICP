@@ -162,3 +162,46 @@
             || ================= ||
 ==================================================
 ```
+
+### 타입 바꾸기(coercion)
+
+- 타입의 경계를 가로지르는 연산. 데이터 타입이 서로 독립적이지 않아서, 한 데이터 타입 물체를 다른 데이터 타입 물체로 바꿀 수 있는 방법.
+- 타입의 계층 관계hierarchy of types:
+  - 탑 구조에는 아래 타입이 그 위 타입에서 정의한 연산을 모두 '물려받는다inherit'는 개념을 쉽게 구현할 수 있다는 이점이 있다. (연산-함수 재활용)
+  - `raise`: 탑 구조에서 한 데이터 타입 물체를 바로 위에 있는 타입으로 '끌어올리는raise'일을 한다.
+  - `lower`: 탑 구조에서 한 데이터 타입 물체를 가장 단순한 표현으로 '끌어내리는lower'일을 한다.
+
+```lisp
+(define (apply-generic op . args)
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+          (apply proc (map contents args))
+          (if (= (length args) 2)
+              (let ((type1 (car type-tags))
+                    (type2 (cadr type-tags))
+                    (a1 (car args))
+                    (a2 (cadr args)))
+                (let ((t1->t2
+                       (get-coercion type1
+                                     type2))
+                      (t2->t1
+                       (get-coercion type2
+                                     type1)))
+                  (cond (t1->t2
+                         (apply-generic
+                          op (t1->t2 a1) a2))
+                        (t2->t1
+                         (apply-generic
+                          op a1 (t2->t1 a2)))
+                        (else
+                         (error
+                          "No method for
+                           these types"
+                          (list
+                           op
+                           type-tags))))))
+              (error
+               "No method for these types"
+               (list op type-tags)))))))
+```
