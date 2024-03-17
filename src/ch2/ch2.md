@@ -172,6 +172,15 @@
   - `lower`: 탑 구조에서 한 데이터 타입 물체를 가장 단순한 표현으로 '끌어내리는lower'일을 한다.
 
 ```lisp
+(define (scheme-number->complex n)
+  (make-complex-from-real-imag
+   (contents n) 0))
+
+(put-coercion 'scheme-number 'complex
+              scheme-number->complex)
+```
+
+```lisp
 (define (apply-generic op . args)
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
