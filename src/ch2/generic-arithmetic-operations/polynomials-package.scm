@@ -48,7 +48,7 @@
          (mul-term-by-all-terms 
           (first-term L1) L2)
          (mul-terms (rest-terms L1) L2))))
-  
+
   (define (mul-term-by-all-terms t1 L)
     (if (empty-termlist? L)
         (the-empty-termlist)
@@ -60,6 +60,13 @@
            (mul-term-by-all-terms 
             t1 
             (rest-terms L))))))
+  
+  (define (negate-terms termlist) 
+    (if (empty-termlist? termlist) 
+          the-empty-termlist 
+          (let ((t (first-term termlist))) 
+            (adjoin-term (make-term (order t) (negate (coeff t))) 
+                         (negate-terms (rest-terms termlist)))))) 
 
   (define (adjoin-term term term-list)
     (if (=zero? (coeff term))
@@ -105,6 +112,12 @@
   (put 'mul '(polynomial polynomial) ; 일반화된 연산 mul에 다항식 경우도 추가
        (lambda (p1 p2) 
          (tag (mul-poly p1 p2))))
+  (put 'sub '(polynomial polynomial)
+       (lambda (p1 p2) 
+         (tag (add-poly p1 (negate p2)))))
+  (put 'negate 'polynomial 
+           (lambda (p) (make-poly (variable p) 
+                                           (negate-terms (term-list p))))) 
   (put '=zero? '(polynomial) =zero?)
   (put 'make 'polynomial
        (lambda (var terms) 

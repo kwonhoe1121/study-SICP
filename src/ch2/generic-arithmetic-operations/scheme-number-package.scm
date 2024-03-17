@@ -13,6 +13,8 @@
        (lambda (x y) (tag (= x y))))
   (put '=zero? '(scheme-number)
        (lambda (x) (tag (= x 0))))
+  (put 'negate 'scheme-number
+        (lambda (n) (tag (- n))))
   (put 'make 'scheme-number
        (lambda (x) (tag x)))
   'done)
