@@ -1,3 +1,5 @@
+; 먼저 탑 구조에서 두 타입 가운데 어느 쪽이 위에 있는지 알아보는 방법부터 마련해야 한다.
+
 (define (raise-up type1 type2)
   (define tower '(integer rational real complex))
   (define (iter t1 t2 t)

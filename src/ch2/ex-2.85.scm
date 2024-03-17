@@ -1,5 +1,9 @@
 ; [답안 참고]
 
+; 어떤 수에 project 연산을 적용한 다음,
+; 그 결과를 다시 처음 꼴로 raise 연산을 적용하였을 때,
+; 그 값이 처음 값과 같다면 그 수에는 drop 연산을 적용할 수 있다.
+
 ;; add into rational package
 (put 'project 'rational
      (lambda (x) (make-scheme-number (round (/ (numer x) (denom x))))))

@@ -1,3 +1,7 @@
+; 모든 인자를 첫 번째 인자 타입으로 바꾸려 해보고,
+; 이어서 두 번째 인자 타입으로 바꾸려 해보고,
+; 계속 차례대로 타입 바꾸기 시도를 이어가는 방식을 따를 수 있다.
+
 (define (find-type types)
   (define (iter target-types)
     (cond ((null? target-types) nil)
