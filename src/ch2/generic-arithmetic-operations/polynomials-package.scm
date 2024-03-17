@@ -1,3 +1,9 @@
+; "일반화된 연산" + "데이터 중심 프로그래밍" =>  "recursive data abstraction"
+
+; 합쳐진 데이터 타입에서,
+; 타입이 다른 각 부분을 다루는 데 모자람이 없게끔,
+; 시스템 속에 일반화된 연산을 알맞게 마련해 놓기만 하면 끝이다.
+
 (define (install-polynomial-package)
   ;; internal procedures
   ;; representation of poly

@@ -137,6 +137,12 @@
 (define (apply-generic op arg) (arg op))
 ```
 
+## recursive data abstraction
+
+"일반화된 연산" + "데이터 중심 프로그래밍" => "recursive data abstraction"
+
+- 합쳐진 데이터 타입에서, 타입이 다른 각 부분을 다루는 데 모자람이 없게끔, 시스템 속에 일반화된 연산을 알맞게 마련해 놓기만 하면 끝이다.
+
 ## 계층화 설계 방식 사용(abstraction barrier)
 
 - **다층 설계stratified design**방식이라 일컫는 것으로, 단계별로 여러 언어를 쌓아올려서 복잡한 시스템을 층층이 짜맞추어 가는 방법이다.
