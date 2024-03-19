@@ -1,3 +1,5 @@
+(load "./src/lib/util.scm")
+
 (define new-withdraw
   (let ((balance 100))
     (lambda (amount)
