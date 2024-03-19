@@ -91,20 +91,55 @@
                                      (car rest-of-result))
                         (cadr rest-of-result))))))))
 
-   (define (remainder-terms p1 p2)
-     (cadr (div-terms p1 p2)))
+  ; GCD 계산 과정은 유리 함수 연산 시스템에서 중심이 되는 기능이다.
 
+  ; (define (remainder-terms p1 p2)
+  ;    (cadr (div-terms p1 p2)))
+
+  ; (define (gcd-terms a b)
+  ;   (if (empty-termlist? b)
+  ;       a
+  ;       (gcd-terms b (remainder-terms a b))))
+
+  ;  (define (gcd-poly p1 p2)
+  ;    (if (same-varaible? (variable p1) (variable p2))
+  ;      (make-poly (variable p1)
+  ;                 (gcd-terms (term-list p1)
+  ;                            (term-list p2))
+  ;      (error "not the same variable -- GCD-POLY" (list p1 p2)))))
+
+  (define (pseudoremainder-terms a b)
+    (let* ((o1 (order (first-term a)))
+           (o2 (order (first-term b)))
+           (c (coeff (first-term b)))
+           (divident (mul-terms (make-term 0
+                                           (expt c (+ 1 (- o1 o2))))
+                                a)))
+      (cadr (div-terms divident b))))
+  
+  ; (define (gcd-terms a b)
+  ;   (if (empty-termlist? b)
+  ;     a
+  ;     (gcd-terms b (pseudoremainder-terms a b))))
+  
   (define (gcd-terms a b)
     (if (empty-termlist? b)
-        a
-        (gcd-terms b (remainder-terms a b))))
+      (let* ((coeff-list (map cadr a))
+             (gcd-coeff (apply gcd coeff-list)))
+        (div-terms a (make-term 0  gcd-coeff)))
+      (gcd-terms b (pseudoremainder-terms a b))))
 
-   (define (gcd-poly p1 p2)
-     (if (same-varaible? (variable p1) (variable p2))
-       (make-poly (variable p1)
-                  (gcd-terms (term-list p1)
-                             (term-list p2))
-       (error "not the same variable -- GCD-POLY" (list p1 p2)))))
+  (define (reduce-terms n d)
+    (let ((gcdterms (gcd-terms n d)))
+          (list (car (div-terms n gcdterms))
+                (car (div-terms d gcdterms)))))
+  
+  (define (reduce-poly p1 p2)
+    (if (same-variable? (variable p1) (variable p2))
+      (let ((result (reduce-terms (term-list p1) (term-list p2))))
+        (list (make-poly (variable p1) (car result))
+              (make-poly (variable p1) (cadr result))))
+      (error "not the same variable--REDUCE-POLY" (list p1 p2))))
  
   (define (adjoin-term term term-list)
     (if (=zero? (coeff term))
@@ -177,6 +212,9 @@
   (put 'greatest-common-divisor '(polynomial polynomial) 
        (lambda (p1 p2)
          (tag (gcd-poly p1 p2))))
+  (put 'reduce '(polynomial polynomial)
+       (lambda (p1 p2)
+         (tag (reduce-poly p1 p2))))
   (put 'make 'polynomial
        (lambda (var terms) 
          (tag (make-poly var terms))))

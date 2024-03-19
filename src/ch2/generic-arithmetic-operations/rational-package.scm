@@ -5,8 +5,9 @@
   ; (define (make-rat n d)
   ;   (let ((g (gcd n d)))
   ;     (cons (/ n g) (/ d g))))
-  (define (make-rat n d) (cons n d))
-  (define (make-rational))
+   (define (make-rat n d)
+     (let ((r (reduce n d))) ; 일반화된 연산 reduce 사용 - 정수, 다항식 모두 사용 가능
+       (cons (car r) (cadr r))))
   (define (add-rat x y)
     (make-rat (add (mul (numer x) (denom y))
                  (mul (numer y) (denom x)))

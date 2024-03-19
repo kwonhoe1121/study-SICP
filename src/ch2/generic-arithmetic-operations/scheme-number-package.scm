@@ -1,4 +1,8 @@
 (define (install-scheme-number-package)
+  (define (reduce-integers n d)
+    (let ((g (gcd n d)))
+      (list (/ n g) (/ d g))))
+
   (define (tag x)
     (attach-tag 'scheme-number x))
   (put 'add '(scheme-number scheme-number)
@@ -17,6 +21,8 @@
         (lambda (n) (tag (- n))))
   (put 'greatest-common-divisor '(scheme-number scheme-number)
        (lambda (a b) (tag (gcd a b))))
+  (put 'reduce '(scheme-number scheme-number)
+       (lambda (a b) (tag (reduce-integers a b))))
   (put 'make 'scheme-number
        (lambda (x) (tag x)))
   'done)
