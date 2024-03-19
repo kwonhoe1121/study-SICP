@@ -90,6 +90,21 @@
                   (list (adjoin-term new-t
                                      (car rest-of-result))
                         (cadr rest-of-result))))))))
+
+   (define (remainder-terms p1 p2)
+     (cadr (div-terms p1 p2)))
+
+  (define (gcd-terms a b)
+    (if (empty-termlist? b)
+        a
+        (gcd-terms b (remainder-terms a b))))
+
+   (define (gcd-poly p1 p2)
+     (if (same-varaible? (variable p1) (variable p2))
+       (make-poly (variable p1)
+                  (gcd-terms (term-list p1)
+                             (term-list p2))
+       (error "not the same variable -- GCD-POLY" (list p1 p2)))))
  
   (define (adjoin-term term term-list)
     (if (=zero? (coeff term))
@@ -159,6 +174,9 @@
            (lambda (p) (make-poly (variable p) 
                                            (negate-terms (term-list p))))) 
   (put '=zero? '(polynomial) =zero?)
+  (put 'greatest-common-divisor '(polynomial polynomial) 
+       (lambda (p1 p2)
+         (tag (gcd-poly p1 p2))))
   (put 'make 'polynomial
        (lambda (var terms) 
          (tag (make-poly var terms))))

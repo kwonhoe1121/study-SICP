@@ -15,6 +15,8 @@
        (lambda (x) (tag (= x 0))))
   (put 'negate 'scheme-number
         (lambda (n) (tag (- n))))
+  (put 'greatest-common-divisor '(scheme-number scheme-number)
+       (lambda (a b) (tag (gcd a b))))
   (put 'make 'scheme-number
        (lambda (x) (tag x)))
   'done)
