@@ -1,5 +1,3 @@
-(load "./src/lib/util.scm")
-
 (define (make-accumulator sum)
   (lambda (n)
     (set! sum (+ sum n))
