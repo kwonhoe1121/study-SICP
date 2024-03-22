@@ -1,0 +1,16 @@
+(define (make-rand init)
+  (define cur-rand init)
+  (define generate (lambda ()
+                 (set! cur-rand (rand-update cur-rand))
+                 cur-rand))
+  (define (reset n) (set! cur-rand n))
+  (define (dispatch m)
+    (cond (('generate  (generate)))
+          (('reset reset))
+          (else (error "Unknown request:: MAKE-RAND" m))))
+  dispatch)
+
+(define rand (make-rand nil))
+
+; (rand 'generate)
+; (rand 'reset)
