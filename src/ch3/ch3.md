@@ -39,6 +39,11 @@ x = 7             y = 2
 (begin ⟨exp₁⟩ ⟨exp₂⟩ … ⟨expₖ⟩)
 ```
 
+```
+(set-car! <pair> <pair>)
+(set-cdr! <pair> <pair>)
+```
+
 #### BOUND VARIABLES
 
 - `∀x ∃y P(x,y)`
