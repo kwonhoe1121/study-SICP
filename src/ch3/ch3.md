@@ -41,11 +41,6 @@ x = 7             y = 2
 (begin ⟨exp₁⟩ ⟨exp₂⟩ … ⟨expₖ⟩)
 ```
 
-```
-(set-car! <pair> <pair>)
-(set-cdr! <pair> <pair>)
-```
-
 #### BOUND VARIABLES
 
 - `∀x ∃y P(x,y)`
@@ -100,9 +95,17 @@ code := <parameters, body>
 - **프로시저가 인자를 받으면, 새 환경이 생긴다.** 새 환경을 둘러싸는 환경은 프로시저 객체가 가리키던 환경이다.
 - 부분식을 계산하고 나서, 그 값은 이어지는 계산 과정으로 넘어간다.
 
-#### 자료구조
+#### 상태 자료구조
 
-- 큐
+```
+(set-car! <pair> <pair>)
+(set-cdr! <pair> <pair>)
+```
+
+`set-car!`와 `set-cdr!`로 쌍을 고쳐 쓸 수 있으면 `cons`, `car`, `cdr`로는 만들지 못하던 여러 데이터 구조를 표현할 수 있다.
+
+- 큐(queue): `queue := <front-ptr, rear-ptr>`
+- 테이블(table)
 
 ### 스트림 Stream
 
