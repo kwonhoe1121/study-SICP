@@ -38,3 +38,6 @@
                queue 
                (cdr (front-ptr queue)))
               queue)))
+
+(define (print-queue q)
+  (display (front-ptr q)))
