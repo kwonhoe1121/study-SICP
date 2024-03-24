@@ -107,6 +107,12 @@ code := <parameters, body>
 - 큐(queue): `queue := <front-ptr, rear-ptr>`
 - 테이블(table)
 
+```txt
+table := (list <*table*(dummy)> <record1> <record2> ... )
+records := (cdr table)
+record := (cons key value)
+```
+
 ### 스트림 Stream
 
 - 끝없이 정보가 흘러간다는 개념(stream)을 빌어 시간에 따라 달라지는 정보를 나타낼 때에는, 그 시간과 컴퓨터 계산 차례는 아무런 관계가 없다.
