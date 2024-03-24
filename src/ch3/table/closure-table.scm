@@ -6,81 +6,48 @@
              (car records))
             (else (assoc key (cdr records)))))
 
-    (define (find-table key tables) (assoc key tables))
+    (define (lookup key table)
+      (let ((record (assoc key (cdr table))))
+        (if record
+            (cdr record)
+            false)))
 
-    (define (last-key? keys) (= (length keys) 1))
+    (define (insert! key value table)
+      (let ((record (assoc key (cdr table))))
+        (if record
+            (set-cdr! record value)
+            (set-cdr! table
+                      (cons (cons key value) 
+                            (cdr table)))))
+      'ok)
 
-    ; (define (lookup key-1 key-2)
-    ;   (let ((subtable 
-    ;          (assoc key-1 (cdr local-table))))
-    ;     (if subtable
-    ;         (let ((record 
-    ;                (assoc key-2 
-    ;                       (cdr subtable))))
-    ;           (if record (cdr record) false))
-    ;         false)))
-
-    ; (define (insert! key-1 key-2 value)
-    ;   (let ((subtable 
-    ;          (assoc key-1 (cdr local-table))))
-    ;     (if subtable
-    ;         (let ((record 
-    ;                (assoc key-2 
-    ;                       (cdr subtable))))
-    ;           (if record
-    ;               (set-cdr! record value)
-    ;               (set-cdr! 
-    ;                subtable
-    ;                (cons (cons key-2 value)
-    ;                      (cdr subtable)))))
-    ;         (set-cdr! 
-    ;          local-table
-    ;          (cons (list key-1
-    ;                      (cons key-2 value))
-    ;                (cdr local-table)))))
-    ;   'ok)
-
-    (define (lookup keys)
-      (define (iter rest-keys rest-tables)
-        (if (or (null? rest-keys)
-                (null? rest-tables))
-          #f
-          (let ((found-table (find-table (car rest-keys)
-                                         (cdr rest-tables))))
-            (if (and found-table
-                     (last-key? rest-keys))
-              (cdr found-table)
-              (iter (cdr rest-keys) (cdr rest-tables))))))
-      (iter keys local-table))
-
-    (define (insert! keys value)
-      (define (iter rest-keys rest-tables)
-        (if (null? rest-keys)
-          'ok
-          (let ((found-table (find-table (car rest-keys)
-                                       (cdr rest-tables))))
-            (if (last-key? rest-keys)
-              (if found-table
-                (set-cdr! found-table value)
-                (set-cdr!
-                  rest-tables
-                  (cons (cons (car rest-keys) value)
-                        (cdr rest-tables))))
-              (if found-table
-                (iter (cdr rest-keys) (cdr rest-tables))
-                (begin
-                  (set-cdr!
-                    rest-tables
-                    (list (car rest-keys)))
-                  (iter (cdr rest-keys)
-                       (cdr rest-tables))))))))
-      (iter keys local-table))
+   (define (table? t)
+     (and (pair? t) (eq? '*table* (car t))))
+  
+   (define (lookup-generic table key . rest-of-keys)
+     (let ((subtable-or-record (lookup key table)))
+       (cond ((not subtable-or-record) false)
+             ((null? rest-of-keys) subtable-or-record)
+             ((table? subtable-or-record) (apply lookup-generic subtable-or-record rest-of-keys))
+             (else (error "LOOKUP-GENERIC key is not a subtable" key subtable-or-record)))))
+  
+   (define (insert-generic! table value key . rest-of-keys)
+     (if (null? rest-of-keys) ; on the last key
+         (insert! key value table)
+         (let ((subtable-or-record (lookup key table)))
+           (if (table? subtable-or-record)
+               (apply insert-generic! subtable-or-record value rest-of-keys)
+               (let ((new-subtable (make-table)))
+                 (insert! key new-subtable table)
+                 (apply insert-generic! new-subtable value rest-of-keys))))))
 
     (define (print-table) (display local-table))
 
     (define (dispatch m)
-      (cond ((eq? m 'lookup-proc) lookup)
-            ((eq? m 'insert-proc!) insert!)
+      (cond ((eq? m 'lookup-proc) (lambda (keys)
+                                    (lookup-generic local-table keys)))
+            ((eq? m 'insert-proc!) (lambda (keys value)
+                                     (insert-generic! local-table value keys)))
             ((eq? m 'print-table) print-table)
             (else (error "Unknown operation: 
                           TABLE" m))))

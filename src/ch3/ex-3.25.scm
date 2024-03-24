@@ -10,9 +10,9 @@
 
 (put (list 'a 'b) 2)
 
-(put (list 'a 'b 'c) 100)
+(put (list 'a 'b 'c) 300)
 
-(put (list 'a 'b 'c) 200)
+(put (list 'a 'b 'd) 200)
 
 (print)
 
