@@ -106,6 +106,8 @@ code := <parameters, body>
 
 - 큐(queue): `queue := <front-ptr, rear-ptr>`
 - 테이블(table)
+  - 캐시, 메모화(memoization):
+    - 먼저 어떤 프로시저 속에 표를 숨긴 다음, 이 프로시저를 적용하고 얻은 값을 이 표에다 메모한다. 이때 표에서 값을 찾는 키는 인자다.
 
 ```txt
 table := (list <*table*(dummy)> <record1> <record2> ... )

@@ -21,12 +21,11 @@
                         (cdr table)))))
   'ok)
 
-(define (make-table)
-  (list '*table*))
+(define (make-table) (list '*table*))
 
 ; 이차원
 
-(define (lookup key-1 key-2 table)
+(define (lookup-2 key-1 key-2 table)
   (let ((subtable (assoc key-1 (cdr table))))
     (if subtable
         (let ((record 
@@ -34,7 +33,7 @@
           (if record (cdr record) false))
         false)))
 
-(define (insert! key-1 key-2 value table)
+(define (insert-2! key-1 key-2 value table)
   (let ((subtable (assoc key-1 (cdr table))))
     (if subtable
         (let ((record 
