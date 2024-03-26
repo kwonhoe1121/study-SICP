@@ -105,6 +105,7 @@ code := <parameters, body>
 `set-car!`와 `set-cdr!`로 쌍을 고쳐 쓸 수 있으면 `cons`, `car`, `cdr`로는 만들지 못하던 여러 데이터 구조를 표현할 수 있다.
 
 - 큐(queue): `queue := <front-ptr, rear-ptr>`
+  - 실행 순서가 중요한 경우.
 - 테이블(table)
   - 캐시, 메모화(memoization):
     - 먼저 어떤 프로시저 속에 표를 숨긴 다음, 이 프로시저를 적용하고 얻은 값을 이 표에다 메모한다. 이때 표에서 값을 찾는 키는 인자다.
