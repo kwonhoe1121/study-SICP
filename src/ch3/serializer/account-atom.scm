@@ -1,4 +1,5 @@
 ; 은행 계정마다 시리얼라이저를 하나씩 가지므로, 서로 다른 은행 계정에 돈을 넣거나 빼는 일은 한꺼번에 처리될 수 있다.
+; 단일 공유 자원에서 사용할 수 있다.
 
 (define (make-account balance)
   (define (withdraw amount)
