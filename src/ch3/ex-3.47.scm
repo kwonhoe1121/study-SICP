@@ -1,0 +1,67 @@
+(load "./src/ch3/serializer/serializer.scm")
+
+(define (make-semaphore n)
+  (let ((cell (list 0)))
+    (define (the-semaphore m)
+      (cond ((eq? m 'acquire)
+             (if (test-and-set! cell n)
+               (the-semaphore 'acquire))
+             ((eq? m 'release) (clear! cell)))
+            (else (error "UNKNOWN REQUEST -- SEMAPHORE" m))))
+    the-semaphore))
+
+(define (clear! cell)
+  (if (> (car cell) 0)
+    (set-car! cell (- (car cell) 0))))
+
+(define (test-and-set! cell n)
+  (if (< (car cell) n)
+    (begin
+      (set-car! cell (+ (car cell) 1))
+      false)
+    true))
+
+; [참고답안]
+
+; (a) 뮤텍스를 써서 세마포어를 만드는 경우
+
+(define (make-semaphore n)
+  (let ((total 0)
+        (access-lock (make-mutex)))
+    (define (acquire)
+      (access-lock 'acquire)
+      (if (< total n)
+        (begin (set! total (+ total 1))
+               (access-lock 'release))
+        (begin (access-lock 'release)
+                (acquire))))
+    (define (release)
+      (access-lock 'acquire)
+      (set! total (- total 1))
+      (access-lock 'release))
+    (define (the-semaphore m)
+      (cond ((eq? m 'acquire) (acquire))
+            ((eq? m 'release) (release))))))
+
+; (b) test-and-set! 연산을 써서 세마포어를 만드는 경우
+
+(define (make-semaphore n)
+  (let ((total 0)
+        (access-lock (make-mutex))
+        (release-indicator (make-mutex)))
+    (define (acquire)
+      (access-lock 'acquire)
+      (if (< total n)
+        (begin (set! total (+ total 1))
+               (access-lock 'release))
+        (begin (access-lock 'release)
+               (release-indicator 'acquire)
+               (acquire))))
+    (define (release)
+      (access-lock 'acquire)
+      (set! total (- total 1))
+      (release-indicator 'release)
+      (access-lock 'release))
+    (define (the-semaphore m)
+      (cond ((eq? m 'acquire) (acquire))
+            ((eq? m 'release) (release))))))
