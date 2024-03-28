@@ -79,3 +79,5 @@
    (lambda (x) (* x factor))
    stream))
 
+(define (mul-stream s1 s2)
+  (stream-map * s1 s2))
