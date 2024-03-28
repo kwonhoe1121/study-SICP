@@ -1,4 +1,4 @@
-(load "./src/lib/stream.scm")
+(load "./src/ch3/stream/stream.scm")
 
 (define (show x)
   (display-line x)
