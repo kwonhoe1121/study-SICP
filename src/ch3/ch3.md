@@ -146,5 +146,22 @@ record := (cons key value)
 ### 스트림 Stream
 
 - 끝없이 정보가 흘러간다는 개념(stream)을 빌어 시간에 따라 달라지는 정보를 나타낼 때에는, 그 시간과 컴퓨터 계산 차례는 아무런 관계가 없다.
+- 시간에 따른 시스템의 변화(상태)를 모두 차례열에 담아서, 상태 변화를 흉내내는 방법
 
 ### **셈미룸 계산법delayed evaluation**
+
+- *리스트*와 _스트림_ 둘 다 차례열 데이터를 요약했다는 점은 같지만, 그 원소를 언제 계산하는지가 다르다. 다시 말해서, 리스트에서는 리스트를 만들 때 `car`와 `cdr`를 모두 계산하지만, 스트림에서는 `cdr`를 뽑아 쓸 때 `cdr`를 계산한다.
+- 스트림 프로세스의 각 단계에서는 다음 단계에서 쓸 만큼만 계산을 하게 된다.
+
+```txt
+[stream]
+data-abstraction := cons-stream, stream-car, stream-cdr, stream-null?
+evaluation := delay, force
+
+(cons-stream ⟨a⟩ ⟨b⟩) = (cons ⟨a⟩ (delay ⟨b⟩))
+(define (stream-car stream) (car stream))
+(define (stream-cdr stream) (force (cdr stream)))
+
+(delay ⟨exp⟩) = (lambda () ⟨exp⟩) = (memo-proc (lambda () ⟨exp⟩))
+(define (force delayed-object) (delayed-object))
+```
