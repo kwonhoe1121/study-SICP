@@ -111,6 +111,17 @@
                     (stream-cdr s1)
                     (stream-cdr s2)))))))))
 
+(define (make-tableau transform s)
+  (cons-stream 
+   s
+   (make-tableau
+    transform
+    (transform s))))
+
+(define (accelerated-sequence transform s)
+  (stream-map stream-car
+              (make-tableau transform s)))
+
 (define (stream-limit s tolerance)
   (let ((s1 (stream-ref s 0))
         (s2 (stream-ref s 1)))
