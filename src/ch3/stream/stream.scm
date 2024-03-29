@@ -110,3 +110,11 @@
                    (merge 
                     (stream-cdr s1)
                     (stream-cdr s2)))))))))
+
+(define (stream-limit s tolerance)
+  (let ((s1 (stream-ref s 0))
+        (s2 (stream-ref s 1)))
+    (if (< (abs (- s1 s2))
+           tolerance)
+      s2
+      (stream-limit (stream-cdr s) tolerance))))
