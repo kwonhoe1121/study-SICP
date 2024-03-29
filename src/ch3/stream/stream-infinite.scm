@@ -106,3 +106,51 @@
 
 (define tangent-series
   (div-series sine-series cosine-series))
+
+(define (sqrt-stream x)
+  (define guesses
+    (cons-stream 
+     1.0 (stream-map
+          (lambda (guess)
+            (sqrt-improve guess x))
+          guesses)))
+  guesses)
+
+(define (pi-summands n)
+  (cons-stream 
+   (/ 1.0 n)
+   (stream-map - (pi-summands (+ n 2)))))
+
+(define pi-stream
+  (scale-stream 
+   (partial-sums (pi-summands 1)) 4))
+
+; Sn+1 − (Sn+1 − Sn)^2 / (Sn−1 − 2Sn + Sn+1)
+
+(define (euler-transform s)
+  (let ((s0 (stream-ref s 0))     ; Sₙ₋₁
+        (s1 (stream-ref s 1))     ; Sₙ
+        (s2 (stream-ref s 2)))    ; Sₙ₊₁
+    (cons-stream 
+     (- s2 (/ (square (- s2 s1))
+              (+ s0 (* -2 s1) s2)))
+     (euler-transform (stream-cdr s)))))
+
+; stream of stream
+
+(define (make-tableau transform s)
+  (cons-stream 
+   s
+   (make-tableau
+    transform
+    (transform s))))
+
+; 순차열 가속기; 스트림을 변환시켜서 만들 수 있다.
+
+(define (accelerated-sequence transform s)
+  (stream-map stream-car
+              (make-tableau transform s)))
+
+; (display-stream 
+;  (accelerated-sequence euler-transform
+;                        pi-stream))
