@@ -16,3 +16,14 @@
                 v0
                 dt)))
   rc)
+
+(define (smooth s)
+  (stream-map average
+              s
+              (stream-cdr s)))
+
+(define (make-zero-crossings input-stream)
+  (cons-stream
+    (sign-change-detector (smooth input-stream)
+                          (smooth (stream-cdr input-stream)))
+    (make-zero-crossings (stream-cdr input-stream))))
