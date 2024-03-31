@@ -24,6 +24,205 @@
 
 처음에는 언어를 어떻게 만드는지 이해하기 위하여 lisp 언어 실행기를 lisp 으로 짠다 (Scheme의 부분집합). 이처럼 언어 실행기가 처리하려는 언어로 다시 그 실행기를 만들 때, 그런 실행기를 *메타써큘러metacircular 실행기*라고 한다.
 
+- 환경 계산법 두 가지 규칙
+
+  - (특별한 형태special form를 제외하고)식combination의 값을 구하려면, 부분 식의 값부터 모두 구해야 한다. 그런 다음에, 연산자(연산자에 해당하는 부분 식의 값, 곧 프로시저)를 피연산자(나머지 부분 식의 값)에 적용한다.
+  - 프로시저를 인자에 적용하려면, 프로시저의 몸(식)을 계산하기 위하여 새 환경부터 만든다. 새 환경은, 인자 이름에 해당하는 인자 값을 찾아 쓸 수 있도록 새 (변수) 일람표를 만들어서 이미 있던 환경에다 덧댄 것이다.
+
+- 위의 돌고 도는 두 규칙이 식의 값을 구하는 프로세스의 핵심이다. 이 규칙에 따라 어떤 식을 정해진 환경 속에서 계산하면, 프로시저를 인자에 적용하는 식이 나온다. 이런 계산 과정을 언어 실행기의 핵심 프로시저인 `eval`과 `apply`가 맞물려 돌아가는 모습으로 나타낼 수 있다.
+- 식의 값을 구하는 프로세스는 `eval`과 `apply`라는 두 프로시저가 맞물려 돌아가는 것이라 볼 수 있다.
+
+```
+          proc, args
+       ,-----------------.
+      /                  ↓
+  [ EVAL ]            [ APPLY ]
+      ↑                 /
+      '----------------'
+           exp, env
+```
+
+### EVAL
+
+- 언어 실행기의 구현 방식은 처리할 *식의 문법syntax*을 정의하는 프로시저에 따라 다르다. 이 책에서는 데이터를 요약하여 *언어 실행기*와 *언어의 표현 방식*을 따로 떼어내고자 한다.
+- eval 함수는 프로그램의 한 1. 구성요소(component)와 2. 환경(env)을 받는다.
+- 여기서 프로그램의 구성요소는 문장 아니면 표현식이다.
+- eval 프로시저는 계산할 식의 문법을 갈래별로 따져보는 구조를 갖추고 있다.
+  - 기본 식primitive expression
+  - 특별한 형태special form
+  - 엮은 식combination
+
+```txt
+[SPECIAL FORM]
+that's where the reserve words go.
+
+number: 3 -> 3
+symbol: x -> 3; car -> #[procedure]
+quote : 'foo => (quote foo) -> foo
+lambda: (lambda (x) (+ x y)) -> (closure ((x) (+ x y)) <env>)
+                                          --- ------    ---
+                   bound variable list  --'     `-body   `-- environment
+cond: (cond (p₁ e₂) (p₂ e₂) ...)
+
+[DEFAULT COMBINATION]
+default being a general application of combination
+
+(+ x 3)
+```
+
+#### Eval is a "Universal Machine"
+
+```txt
+      simulator
+   6  .------. 720
+ ---->| EVAL |---->
+      '------'
+        ↑
+        | input
+        /
+       |
+ n  .------. nl
+--->| Fact |---->
+    '------'
+    description of another machine
+```
+
+### APPLY
+
+- apply 함수는 두 개의 인수를 받는다. 1.함수 2.(그 함수를 적용할)인수들의 목록
+- apply 함수는 주어진 함수를 두 종류로 분류한다.
+  - 1. 원시 함수(primitive function): `apply-primitive-function`을 호출해서 원시 함수를 적용한다.
+  - 2. 복합 함수: 복합 함수의 본문 블록을 평가하되, 현재 환경에 함수의 매개변수들을 함수 적용의 인수들과 묶는 프레임을 추가해서 만든 새 환경에서 평가한다.
+
+### BIND
+
+```scheme
+(define eval
+  (lambda (exp env)
+          (cond ((number? exp) exp)
+                ((symbol? exp) (lookup exp env))
+                ((eq? (car exp) 'quote) (cadr exp))
+                ((eq? (car exp) 'lambda)
+                 (list 'closure (cdr exp) env))
+                ((eq? (car exp) 'cond)
+                 (evcond (cdr exp env))
+                 (else (apply (eval (car exp) env)
+                              (evlist (cdr exp) env)))))))
+
+(define apply
+  (lambda (proc args)
+          (cond ((primitive? proc)
+                 (apply-primop proc args))
+                ((eq? (car proc) 'closure)
+                 (eval (cadadr proc)
+                       (bind (caadr proc)
+                             args
+                             (caddr proc))))
+                (else error))))
+
+(define evlist
+  (lambda (l env)
+          (cond ((eq? l '()) '())
+                (else
+                  (cons (eval (car l) env)
+                        (evlist (cdr l) env))))))
+
+(define evcond
+  (lambda (clauses env)
+          (cond ((eq? clauses '()) '())
+                ((eq? (caar clauses) 'else)
+                 (eval (cadar clauses) env))
+                ((false? (eval (caar clauses) env))
+                 (evcond (cdr clauses) env))
+                (else
+                  (eval (cadar clauses) env)))))
+
+(define bind
+  (lambda (vars vals env)
+          (cons (pair-up vars vals)
+                env)))
+
+(define pair-up
+  (lambda (vars vals)
+          (cond
+            ((eq? vars '())
+             (cond ((eq? vals '()) '())
+                   (else (error TMA))))
+            ((eq? vals '()) (error TFA))
+            (else
+              (cons (cons (car vars)
+                          (car vlas))
+                    (pair-up (cdr vars)
+                             (cdr vals)))))))
+
+(define lookup
+  (lambda (sym env)
+          (cond ((eq? env '()) (error UBV))
+                (else
+                  ((lambda (vcell)
+                           (cond ((eq? vcell '())
+                                  (lookup sym
+                                          (cdr env)))
+                                 (else (cdr vcell))))
+                   (assq sym (car env)))))))
+
+(define assq
+  (lambda (sym alist)
+          (cond ((eq? alist '()) '())
+                ((eq? sym (caar alist))
+                 (car alist))
+                (else
+                  (assq sym (cdr alist))))))
+```
+
+### PRACTICE
+
+```scheme
+(eval '(((lambda (x) (lambda (y) (+ x y))) 3) 4) e0)
+```
+
+```scheme
+(apply (apply (eval '(lambda (x) (lambda (y) (+ x y))) e0)
+                '(3))
+        '(4))
+
+(apply (apply '(closure ((x) (lambda (y) (+ x y))) e0)
+                '(3))
+        '(4))
+
+(apply (eval '(lambda (y) (+ x y)) e1)
+        '(4))
+
+(apply '(closure ((y) (+ x y)) e1)
+        '(4))
+
+(eval '(+ x y) e2)
+
+(apply (eval '+ e2))
+       (evlist '(x y) e2))
+
+(apply 'primop '(3 4))
+
+7
+```
+
+```
+                .---------------------.
+e0 -----------> :  global environment :
+                :                     :
+                :  + - * / car cdr .. :
+                '---------------------'
+                              ↑
+                      .--------------.
+e1 -----------------> : x = 3        :
+                      '--------------'
+                      /       ↑
+    [·, ·] ----------'        |
+     ↓                .--------------.
+(lambda (y) (+ x y))  : y = 4        : <---------- e2
+                      '--------------'
+```
+
 ## Scheme 바꿔보기 - 제때 계산법(lazy evaluation)
 
 바탕이 되는 언어(스킴)를 바꾸어서 더 깔끔한 방법으로 스트림 데이터 기법을 프로그래밍 할 수 있도록, *정의대로 계산법normal-order evaluation*을 적용한 실행기를 만든다.
