@@ -51,6 +51,8 @@
   - 기본 식primitive expression
   - 특별한 형태special form
   - 엮은 식combination
+    - lisp 시스템에는 언어 실행기를 고치지 않고도 프로그래머가 필요한 문법을 만들어 쓸 수 있도록, 엮은 식을 문법 변환기로 처리하는 기능이 있다. 이런 문법 변환 기능을 **매크로macro**라 한다.
+    - ex) `cond->if`, `let->combination`
 
 ```txt
 [SPECIAL FORM]
