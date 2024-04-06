@@ -89,6 +89,11 @@ default being a general application of combination
     description of another machine
 ```
 
+- 간단한 프로시저로 구현한 언어 실행기에서 그보다 훨씬 복잡한 프로그램을 돌릴 수 있다는 사실, 만능 언어 실행기 기계(universal evaluator machine)가 있다는 점은 (컴퓨터) 계산의 깊고도 멋들어진 성질 가운데 하나다.
+- Code is Data, Data is Code
+  - 언어 실행기에는 프로그래밍 언어로 처리하는 데이터 객체와 그 프로그래밍 언어 자체를 이어주는 다리 구실을 한다
+  - 프로그램을 언어 실행기(관점)에서 데이터로 본다
+
 ### APPLY
 
 - apply 함수는 두 개의 인수를 받는다. 1.함수 2.(그 함수를 적용할)인수들의 목록
