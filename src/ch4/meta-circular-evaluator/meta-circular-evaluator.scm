@@ -316,8 +316,6 @@
           (frame-values frame))))
 
 ; 기본 프로시저가 돌아가도록 밑바탕에 있는 Lisp 시스템에서 힘을 빌려 쓰는 매커니즘 구현
-(define the-global-environment 
-  (setup-environment))
 
 (define (primitive-procedure? proc)
   (tagged-list? proc 'primitive))
@@ -331,7 +329,10 @@
         (list 'cons cons)
         (list 'null? null?)
         (list '+ +)
-        (list 'append append))) ; 추가되는 기본 원소들
+        (list '- -)
+        (list '* *)
+        (list '/ /)
+        (list 'list list)))  ; 추가되는 기본 원소들
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
@@ -341,7 +342,7 @@
          (list 'primitive (cadr proc)))
        primitive-procedures))
 
-; (define apply-in-underlying-scheme apply)
+(define apply-in-underlying-scheme apply)
 
 (define (apply-primitive-procedure proc args)
   (apply-in-underlying-scheme
@@ -376,9 +377,6 @@
              '<procedure-env>))
       (display object)))
 
-(define the-global-environment 
-  (setup-environment))
-
 (define (setup-environment)
   (let ((initial-env
          (extend-environment 
@@ -388,3 +386,7 @@
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
     initial-env))
+
+(define the-global-environment (setup-environment))
+
+(driver-loop)
