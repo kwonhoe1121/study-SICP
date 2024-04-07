@@ -36,10 +36,8 @@
 ; (lambda ⟨vars⟩
 ;   (let ((u '*unassigned*)
 ;         (v '*unassigned*))
-;     (let ((a ⟨e1⟩)
-;           (b ⟨e2⟩))
-;       (set! u a)
-;       (set! v b))
+;     (set! u ⟨e1⟩)
+;     (set! v ⟨e2⟩)
 ;     ⟨e3⟩))
 
 (define (scan-out-defines body)
