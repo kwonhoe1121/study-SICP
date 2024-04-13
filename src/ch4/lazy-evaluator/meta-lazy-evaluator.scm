@@ -129,6 +129,8 @@
         (else obj)))
 
 ; 원시함수 cons를 복합프로시저로 재정의해서 cons-stream 역할을 하도록 한다.
+; 느긋한 평가에서는 스트림과 목록이 실제로 동일할 수 있으므로 스트림을 위한 연산들은 따로 구현할 필요가 없다.
+; 필요한 것은 pair 객체가 엄격하지 않게 처리되게 하는 것뿐이다.
 
 (define (cons x y) (lambda (m) (m x y)))
 (define (car z) (z (lambda (p q) p)))
