@@ -1,0 +1,10 @@
+(load "./src/ch4/ex-4.35.scm")
+
+(define (a-pythagorean-triple-between low)
+  (let* ((k (an-integer-starting-from low))
+         (i (an-integer-between low k))
+         (j (an-integer-between i k)))
+    (require (= (+ (* i i)
+                   (* j j))
+                (* k k)))
+    (list i j k)))
