@@ -127,3 +127,9 @@
         ((evaluated-thunk? obj)
          (thunk-value obj))
         (else obj)))
+
+; 원시함수 cons를 복합프로시저로 재정의해서 cons-stream 역할을 하도록 한다.
+
+(define (cons x y) (lambda (m) (m x y)))
+(define (car z) (z (lambda (p q) p)))
+(define (cdr z) (z (lambda (p q) q)))
