@@ -110,6 +110,12 @@ Lisp 시스템의 실행 흐름control을 명확히 보인다.
 
 #### RECURSIVE PROCEDURE
 
+- `stack` + `continue`
+  - 재귀 계산의 깊이를 미리 알지 못하므로 저장할 레지스터 값을 얼마든지 커질 수 있다. 그리고 저장한 값은 역순으로 되돌려 놓아야 한다. '나중에 넣은 게 먼저 나오는' **스택stack** 데이터 구조를 사용한다. - `save`, `restore` 연산 활용
+  - 이 방법에서는 제어기가 안에 있는 문제를 풀고 나서 원래 문제를 이어서 풀려고 할 때, 알맞은 명령 위치로 되돌아갈 목적으로 `continue` 레지스터를 사용한다. 따라서 `continue` 레지스터에 저장된 진입점entry point으로 돌아가는 팰토리얼 서브루틴을 만들 수 있다. 즉, 팩토리얼 서브루틴은 낮은 수준의 문제를 불러낼 때 그 위치(안에 있는 문제를 풀기 시작한 곳)를 새로운 값으로 삼아 `continue` 레지스터에 넣는다.
+- 되도는 방식으로 어떤 문제를 풀 때 스택에 저장한 레지스터 값은 문제를 푼 다음에 필요하다. 문제를 풀고 나면 저장한 레지스터를 복구하고 다시 원래 문제로 계속 진행할 수 있다. (`continue` 레지스터는 언제나 저장되어야 한다.)
+  - 레지스터 값이 변경될 경우 다른 계산에 영향을 미치는 레지스터의 경우는 값을 변경(`assign`) 연산을 적용하기 전에 현재 값을 스택에 저장`save`한다.
+
 ```
     .-------.             .--------------.
     : DATA  :  <--------> : FINITE-STATE :
@@ -132,7 +138,7 @@ Lisp 시스템의 실행 흐름control을 명확히 보인다.
 
 ```scheme
 (define-machine fact
-  (registers val n continue)
+  (registers val n continue) ; 필요한 레지스터
   (controller
     (assign continue done)
     loop
@@ -152,6 +158,56 @@ Lisp 시스템의 실행 흐름control을 명확히 보인다.
     (goto (fetch continue)))
     done
   )
+```
+
+##### 두 군데서 되도는 프로세스double recursion - tree-recursive
+
+```scheme
+(define (fib n)
+  (if (< n 2)
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
+```
+
+```scheme
+(controller
+   (assign continue (label fib-done))
+ fib-loop
+   (test (op <) (reg n) (const 2))
+   (branch (label immediate-answer))
+   ;; set up to compute Fib(n − 1)
+   (save continue)
+   (assign continue (label afterfib-n-1))
+   (save n)           ; save old value of n
+   (assign n
+           (op -)
+           (reg n)
+           (const 1)) ; clobber n to n-1
+   (goto
+    (label fib-loop)) ; perform recursive call
+ afterfib-n-1 ; upon return, val contains Fib(n − 1)
+   (restore n)
+   ;; set up to compute Fib(n − 2)
+   (assign n (op -) (reg n) (const 2))
+   (assign continue (label afterfib-n-2))
+   (save val)         ; save Fib(n − 1)
+   (goto (label fib-loop))
+ afterfib-n-2 ; upon return, val contains Fib(n − 2)
+   (assign n
+           (reg val)) ; n now contains Fib(n − 2)
+   (restore val)      ; val now contains Fib(n − 1)
+   (restore continue)
+   (assign val        ; Fib(n − 1) + Fib(n − 2)
+           (op +)
+           (reg val)
+           (reg n))
+   (goto              ; return to caller,
+    (reg continue))   ; answer is in val
+ immediate-answer
+   (assign val
+           (reg n))   ; base case: Fib(n) = n
+   (goto (reg continue))
+ fib-done)
 ```
 
 ### 명령어 정리
@@ -186,6 +242,39 @@ Instructions to use the stack were introduced in 5.1.4:
 ```
 
 ## 레지스터 기계 시뮬레이터
+
+### 기계 모형
+
+- `make-machine`으로 만든 모형 기계는 메시지 패싱 기법을 사용하여 지역적인 상태local state를 가진 프로시저로 나타낸다.
+
+```txt
+(make-machine ⟨register-names⟩ ⟨operations⟩ ⟨controller⟩)
+
+(set-register-contents! ⟨machine-model⟩ ⟨register-name⟩ ⟨value⟩)
+
+(get-register-contents ⟨machine-model⟩ ⟨register-name⟩)
+
+(start ⟨machine-model⟩)
+```
+
+- `flag` 레지스터는 시뮬레이션 기계에서 제어가 어디로 갈라질지 결정할 때 쓴다. `test` 명령은 검사 결과(참 또는 거짓)를 `flag` 레지스터에 넣는다. `branch` 명령은 `flag`값에 따라 갈림길에서 어디로 갈지 결정한다.
+- `pc` 레지스터는 기계가 돌아갈 때 명령이 실행되는 순서를 알려주는데, 내부 프로시저 `execute`에서 차례대로 명령을 구현한다.
+  - `branch`와 `goto` 명령에서는 `pc`가 새로운 위치를 가리키도록 한다. 다른 명령들은 단순히 `pc` 값이 명령 시퀀스의 다음 명령을 가리키도록 한다.
+
+### 어셈블러
+
+- 어셈블러는 기계의 제어기 식들을 그에 상응하는 기계어 명령들로 바꾸어 준다.
+  - 단순한 규칙(문법)으로 작성된 `controller-text`에 의미를 부여한다.
+  - 그 명령마다 실행 프로시저가 있다.
+  - 대체로 어셈블러는 **실행기evaluator**와 아주 비슷하다. 그 실행기는 언어(여기서는 레지스터 기계어)를 입력받고, 그 언어에서 식의 종류에 따라 그에 알맞은 일을 해야 했다.
+- 레지스터의 실제 값을 몰라도 레지스터-기계-언어 식을 유용하게 분석할 수 있다.
+  - 레지스터 물체에 대한 참조를 포인터로 바꿀 수 있고 라벨이 지정하는 명령 시퀀스의 참조도 포인터로 바꿀 수 있다.
+  - 그래서 어셈블러는 명령어에서 라벨을 구별하기 위해, 제어기 텍스트controller text를 스캔scan하는 일부터 시작한다. 텍스트를 스캔하면서 명령 리스트를 만들고, 리스트 안의 명령어와 라벨을 연관시키기 위한 포인터의 테이블을 만든다. 그러면서 어셈블러는 각 명령을 수행하는 실행 프로시저를 끼워 넣으면서 명령 리스트를 완성해 나간다.
+- 실행 프로시저는 `extract-labels`가 명령을 바로 만들었을 때에는 아직 완성된 것이 아니며 결국 나중에 `update-insts!`가 실행 명령을 직접 넣어주면서 만들어 낸다.
+
+### 명령 실행 프로시저 만들기
+
+- 각 명령을 분석하는 일은 시뮬레이션할 때 수행되는 것이 아니라 어셈블할 때 한 번만 수행한다.
 
 ## 메모리 할당memory allocation과 재활용garbage collection
 
