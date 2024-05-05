@@ -24,8 +24,9 @@ Lisp 시스템의 실행 흐름control을 명확히 보인다.
   - 숨김없이 드러낸 제어 실행기:
   - 'Scheme 실행기'를 '레지스터 기계 DSL(=~ 기계어)'로 구현
   - =~ 컴퓨터 기계어와 비슷한 언어로 쓰인, Scheme 실행기의 구현으로 볼 수 있다.
+  - Scheme 프로그램 --> interperter(기계어 프로그램 by 레지스터 기계 DSL(=~ 기계어)) --> interpret
 - 5.5절에서 만드는 번역기는 Scheme으로 짠 프로그램을 레지스터 기계로 만든 실행기에서 바로 실행되는 명령어들로 번역한다.
-  - Scheme 프로그램 -- compile --> 레지스터 기계 DSL(=~ 기계어)
+  - Scheme 프로그램 -- compile --> 오브젝트 프로그램(by 레지스터 기계 DSL(=~ 기계어)) --> execute
 
 ## 레지스터 기계 설계하기
 
@@ -576,3 +577,212 @@ ev-sequence-last-exp
 ```
 
 ## 번역compilation
+
+- 고수준 언어와 레지스터 기계어의 틈을 메우는 두 가지 전략(interpretation, compilation)
+
+```txt
+program/code/text
+|
+|<-- parse()
+|
+`-- AST/some data structure
+    |
+    |`--> interpret by explicit-control-evaluator ∴ 1. strategy of interpretation
+    |
+    |<-- compile()
+    |
+    `-- ObjectCode (linear structure)
+        |
+        `--> execute by explicit-control-evaluator ∴ 2. strategy of compilation
+```
+
+### INTERPRETATION
+
+- 해석될 프로그램(소스 프로그램)은 데이터 구조(AST)로 표현된다. 실행기는 이 데이터 구조를 따라 움직이며 소스 프로그램을 분석한다. 이렇게 하면서 실행기는 라이브러리에서 적절한 기본 서브루틴을 불러와 소스 프로그램이 실행해야 할 동작을 시뮬레이트 한다.
+
+```txt
+      .-----------------------------------.
+      : LISP INTERPRETER                  :
+      :                                   :
+      :     .---------------------.       :
+      :     : REGISTER LANGUAGE   :       :
+      :     :     INTERPRETER     :       :
+      :     '---------------------'       :
+  5   :         /            \            :  120
+----> :        /              \           : ----->
+      : .----------------.  .---------.   :
+      : : (assign val    ;  : LIBRARY :   :
+      : :   (fetch exp)) :  '---------'   :
+      : '----------------'  primitive op  :
+      : explicit-control-eval             :
+      :                                   :
+      '-----------------------------------'
+            /
+           /
+      .------------------.
+      : (define (fact n) :
+      :   (if ...))      :
+      '------------------'
+```
+
+### COMPILATION
+
+- 대개 번역기는 소스 프로그램을 오브젝트 프로그램으로 바꾸는데, 오브젝트 프로그램은 소스 프로그램을 실행하는 데 실행기가 했던 레지스터 연산과 본질적으로 같은 레지스터 연산을 한다.
+- 실행기가 식을 계산하는 데 수행할 레지스터 명령을 바로 수행하는 대신 명령을 모아 일렬로 쌓아 놓을 수 있다. 결국 이렇게 모인 명령어들이 오브젝트 코드가 될 것이다.
+- 번역기를 쓰면 번역 시에 명령문들이 만들어질 때 식은 한번만 분석된다.
+  - 레지스터와 스택 최적화. 불필요한 스택 연산을 피하는 코드를 만들어 낼 수 있다.
+  - 환경에 대한 접근을 최적화할 수 있다. 코드를 분석한 후 번역기는 변수가 어떤 변수 frame에 들어 있는지 아는 경우가 많아서 `lookup-variable-value`에서 찾지 않아도 변수에 바로 접근할 수 있다.
+- 실제로 우리가 만들 컴파일러는 컴파일된 코드와 인터프리터 코드가 서로 호출할 수 있도록, 컴파일러가 인터프리터와 동일한 레지스터 규칙을 사용하도록 할 것입니다.
+
+```txt
+  .----------------.
+  : DEFINE         :  SOURCE CODE   .----------.
+  : (fact n ...)   : -------------> : COMPILER :
+  '----------------'                '----------'
+                                        /
+                          OBJECT CODE  / TRANSLATE INTO REGISTER LANGUAGE
+                                      /
+                                     ↓
+                            .-----------.
+                            : ASSIGN    :
+                            :  VAL .... :
+                            '-----------'
+                              /
+                             ↓
+                    .----------.
+                    : LINKER/  : LOAD MODULE
+                    : LOADER   :
+                    '----------'
+                       ↑    \
+                      /      `--> .-------------.
+        .---------.--'        5   : REGISTER    :  120
+        : LIBRARY :         ----->: LANGUAGE    : ----->
+        '---------'               : INTERPRETER :
+                                  '-------------'
+```
+
+#### COMPILER STRUCTURE
+
+- 4.1.7절에서 쓴 방법처럼 프로그램을 분석한다. 하지만 실행 프로시저를 만드는 것이 아니라 레지스터 기계로 돌리는 명령들을 만들 것이다.
+
+```scheme
+;; linkage := <next, return, label>
+(assign val (const 5)) ; next
+(goto (reg continue)) ; return
+(goto (reg <linkage>)) ; label
+
+;; Instruction sequences and stack usage (AOP) ~> target register
+(append-instruction-sequences ⟨seq₁⟩ ⟨seq₂⟩) ; independent regs
+(preserving (list ⟨reg₁⟩ ⟨reg₂⟩) ⟨seg₁⟩ ⟨seg₂⟩) ; dependent regs (=> add save, restore)
+
+; instruction := <needs, modifies, statements>
+(define (make-instruction-sequence needs modifies statements)
+  (list needs modifies statements))
+```
+
+- 레지스터 최적화를 수행하는 방법은 어떤 것들이 보존되어야 하는지에 대한 전략을 갖는 것입니다.
+
+```txt
+(op a₁ a₂)
+---> ... compile ...
+
+{compile op; result in fun}                     ↓ preserving env
+
+{compile a₁; result in val}                     |                  |
+(assign argl (cons (fetch val) '()))            ↓ preserving env   |
+                                                                   | preserving fun
+{compile a₂; result in val}                     ↓ preserving argl  |
+(assign argl (cons (fetch val) (fetch argl)))                      ↓
+
+(go to apply-dispatch)
+```
+
+- 이 아이디어는 한 레지스터를 보존하는 데 주의하면서 두 코드 시퀀스를 추가하는 것입니다.
+- 이는 무엇을 함께 놓는다는 것이 무엇을 의미하는지에 따라 달라집니다. 어떤 것을 보존하는 것은 이러한 코드 조각들이 어떤 레지스터를 필요로 하고 수정하는지 아는 것에 달려 있습니다.
+  - 모든 덮어쓰기assignment 명령은 모두 target 레지스터를 고치고modify, 변수를 참조하는 명령은 env 레지스터를 요구need한다.
+
+```txt
+append seq1 and seq2 preserving reg
+
+if seq2 needs reg
+and seq1 modifyes reg
+→
+(save reg)
+<seq1>
+(restore reg)
+<seq2>
+
+ohterwise
+→
+<seq1>
+<seq2>
+```
+
+- 이러한 관점에서 보면, 인터프리터와 컴파일러의 차이점은 어떤 면에서는 컴파일러가 보존해야 할 지점을 알고, 필요하다면 저장과 복원을 실제로 생성할지 아니면 그렇지 않을지를 결정할 수 있다는 점입니다. 반면, 인터프리터는 최대한 비관적으로 접근하여 항상 저장과 복원을 여기에 둡니다. 이것이 본질적인 차이점입니다.
+- 이것이 컴파일러가 이 작업을 수행하기 위해 참조하는 정보입니다.
+  이 작업은 작은 데이터 구조를 갖추고 있다는 점에 달려 있습니다. 여기서 코드 시퀀스는 실제 명령과 그것이 수정하고 필요로 하는 것이 무엇인지를 나타냅니다. 이는 기본 수준에서 이를 구축하는 것에서 나옵니다.
+- 기본 수준에서는 어떤 것이 무엇을 필요로 하고 수정하는지가 완전히 명확할 것입니다. 또한, 이것은 다음과 같은 특정 방식으로 구성됩니다. 더 큰 코드 시퀀스를 구축할 때, 수정된 레지스터의 새로운 집합과 필요한 레지스터의 새로운 집합을 생성하는 방법입니다.
+
+```txt
+<sequence of inst; set of registers modified; set of regs needed>
+
+<(assign r₁ (fetch r₂)); {r₁}; {r₂}>
+
+<s₁;m₁;n₁> and <s₂;m₂;n₂>
+→
+s₁; m₁ union m₂; n₁ union [n₂ - m₁]
+and
+s₂
+```
+
+### Applying compiled procedures
+
+- `compile-proc-appl`는 호출하는 타깃이 `val`인지 아닌지, 연결이 `return`인지 아닌지 등 네 가지 경우를 고려해 아래의 프로시저 계산 코드를 나타낸다.
+
+#### RECURSIVE
+
+- `val`이 target register가 아닌 경우.
+
+```txt
+; 연결이 label일 경우
+ (assign continue (label proc-return))
+ (assign val (op compiled-procedure-entry) (reg proc))
+ (goto (reg val))
+proc-return
+ (assign ⟨target⟩ (reg val))   ; included if target is not val
+ (goto (label ⟨linkage⟩))   ; linkage code
+```
+
+```txt
+; 연결이 return일 경우
+ (save continue)
+ (assign continue (label proc-return))
+ (assign val (op compiled-procedure-entry) (reg proc))
+ (goto (reg val))
+proc-return
+ (assign ⟨target⟩ (reg val))   ; included if target is not val
+ (restore continue)
+ (goto (reg continue))   ; linkage code
+```
+
+#### ITERATIVE
+
+- `val`이 target register인 경우
+- 그렇지만 보통 타깃은 `val`이다. (번역기가 다른 레지스터를 지정하는 유일한 경우는 타깃이 `proc`일 때뿐이다.)
+  - 타깃이 `proc`일 때는 함수를 재귀적으로 호출할때이다.
+- 따라서 프로시저 결과는 타깃 레지스터에 바로 들어가며 그 내용을 복사해 놓은 특정 위치로 돌아갈 필요가 없다. 그 대신 프로시저가 호출자의 연결caller's linkage로 바로 '돌아가도록'continue를 설정하는 것으로 코드를 간단하게 만든다.
+- ∴ 프로시저 인자, 내부 변수를 저장하는데만 스택을 사용한다. 리턴 주소를 저장하는데에는 스택을 사용하지 않는다.
+
+```txt
+; 연결이 label일 경우
+(assign continue (label ⟨linkage⟩))
+(assign val (op compiled-procedure-entry) (reg proc))
+(goto (reg val))
+```
+
+```txt
+; 연결이 return일 경우
+; - 전혀 continue를 둘 필요가 없다. 이미 지정한 번지를 갖고 있기 때문이다.
+(assign val (op compiled-procedure-entry) (reg proc))
+(goto (reg val))
+```
