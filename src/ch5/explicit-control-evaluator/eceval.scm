@@ -4,7 +4,15 @@
   (make-machine
    '(exp env val proc argl continue unev)
    eceval-operations
-   '( ; repl
+   '(
+    ;; branches if flag is set:
+    (branch (label external-entry))
+    external-entry
+      (perform (op initialize-stack))
+      (assign env (op get-global-environment))
+      (assign continue (label print-result))
+      (goto (reg val))
+    ; repl
     read-eval-print-loop
       (perform (op initialize-stack))
       ; (perform (op print-stack-statistics)) ; 실행기 성능 추적 기능
@@ -119,6 +127,8 @@
       (branch (label primitive-apply))
       (test (op compound-procedure?) (reg proc))
       (branch (label compound-apply))
+      (test (op compiled-procedure?) (reg proc))
+      (branch (label compiled-apply))
       (goto (label unknown-procedure-type))
     primitive-apply
       (assign val (op apply-primitive-procedure) (reg proc) (reg argl))
@@ -130,6 +140,10 @@
       (assign env (op extend-environment) (reg unev) (reg argl) (reg env))
       (assign unev (op procedure-body) (reg proc))
       (goto (label ev-sequence))
+    compiled-apply
+      (restore continue) ; continue의 되돌리기가 중요하다. apply-dispatch에서 호출이 끝나고 앞으로 할 일continuation은 스택의 맨 위에 있다는 것을 떠올려라.
+      (assign val (op compiled-procedure-entry) (reg proc))
+      (goto (reg val))
     ev-begin
       (assign unev (op begin-actions) (reg exp))
       (save continue)
@@ -209,3 +223,8 @@
   (list (list 'self-evaluating? self-evaluating)
         ; ⟨complete list of operations for eceval machine⟩
         ))
+
+(define (start-eceval)
+  (set! the-global-environment (setup-environment))
+  (set-register-contents! eceval 'flag false)
+  (start eceval))
