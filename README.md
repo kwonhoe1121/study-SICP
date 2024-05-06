@@ -1,13 +1,22 @@
 # study-SICP
 
-SICP 연습문제 풀이 저장소
+개인 SICP 연습문제 풀이 저장소
+
+- 각 챕터별(ch1 ~ ch5) 요약
+- 각 챕터별 연습 문제 풀이(ex-xxx)
+
+연습 문제 출처(아래 3가지 경우 등)
+
+1. 개인적으로 푼 것.
+2. [SICP solutions](#sicp-solutions) 참고 해서 개인적으로 푼 것.
+3. [SICP solutions](#sicp-solutions) 여러 해답들 중 이해한 것들을 옮겨둔 경우.
 
 ## 참고자료
 
 ### 책
 
 - [Structure and Interpretation of Computer Programs](http://sarabander.github.io/sicp/)
-- [Structure and Interpretation of Computer Programs: JavaScript Edition](https://mitpress.mit.edu/books/structure-and-interpretation-computer-programs-1)
+- [Structure and Interpretation of Computer Programs: JavaScript Edition](https://sicp.sourceacademy.org/)
 
 ### 강의
 
@@ -26,5 +35,3 @@ SICP 연습문제 풀이 저장소
 - [kana-sicp](https://github.com/kana/sicp)
 
 ### 기타
-
-- [SICP-독학을 위한 자료들](https://mitpress.mit.edu/sites/default/files/sicp/index.html)
